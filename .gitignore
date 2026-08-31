@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Published artifacts / logs
+*.tgz
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

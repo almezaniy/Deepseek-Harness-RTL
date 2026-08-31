@@ -1,0 +1,47 @@
+{
+  "name": "deepseek-harness-rtl",
+  "version": "1.0.0",
+  "description": "Arabic (RTL) text fix for the DeepSeek Harness web UI — a browser-side Cordis client plugin that injects an RTL stylesheet.",
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "install.ps1",
+    "patch-example.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "cordis",
+    "rtl",
+    "arabic",
+    "bidi",
+    "client-plugin",
+    "ui"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/almezaniy/Deepseek-Harness-RTL.git"
+  },
+  "homepage": "https://github.com/almezaniy/Deepseek-Harness-RTL#readme",
+  "bugs": {
+    "url": "https://github.com/almezaniy/Deepseek-Harness-RTL/issues"
+  },
+  "author": "almezaniy",
+  "license": "MIT",
+  "private": false
+}

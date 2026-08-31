@@ -1,0 +1,12 @@
+# patch-example.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# The single row to add to your DSH web profile's composition patch so the
+# browser loads the RTL text fix every session. Paste this block into
+# `$DSH_HOME/profiles/<profile>/cordis.patch.yml` (or run install.ps1, which
+# does it for you).
+#
+# `id` is a free-form row id; `name` MUST be the installed package name.
+
+- insert:
+    - id: ui-rtl-fix
+      name: 'deepseek-harness-rtl'
