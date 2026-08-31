@@ -11,6 +11,11 @@ punctuation, an RTL composer, and code areas that stay left-to-right.
 [![npm](https://img.shields.io/npm/v/deepseek-harness-rtl.svg)](https://www.npmjs.com/package/deepseek-harness-rtl)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
+![لقطة شاشة: النص العربي بعد تفعيل الإصلاح — Arabic text with the fix enabled](https://raw.githubusercontent.com/almezaniy/Deepseek-Harness-RTL/main/screenshot.png)
+
+<p align="center"><sub>الواجهة بعد تفعيل الإصلاح: فقرات RTL، ترقيم سليم في الجمل المختلطة، وكود يبقى LTR.<br>
+The UI with the fix on: RTL paragraphs, correct punctuation in mixed sentences, code still LTR.</sub></p>
+
 ---
 
 ## How it works / كيف تعمل
