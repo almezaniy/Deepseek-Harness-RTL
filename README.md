@@ -28,11 +28,49 @@ On page load it injects a stylesheet that:
 
 | المنطقة | Area | السلوك | Behavior |
 |---|---|---|---|
-| فقاعات رسائل | User bubbles | `direction: rtl` + فكّ العزل | RTL + un-isolate |
-| فقرات الردود | Assistant prose | `direction: rtl` | RTL paragraph |
-| جسم التفكير | Thinking body | `direction: rtl` | RTL |
-| المحرر | Composer | `direction: rtl` | RTL typing |
+| فقاعات رسائل | User bubbles | اتجاه حسب المحتوى | direction from content |
+| فقرات الردود | Assistant prose | `unicode-bidi: plaintext` | per-block auto-detect |
+| جسم التفكير | Thinking body | `unicode-bidi: plaintext` | per-block auto-detect |
+| العناوين | Headings | يمين | right |
+| القوائم | Lists | النقاط يمين، النص حسب لغته | marker right, text per language |
+| الاقتباس | Blockquote | الشريط يمين | bar right |
+| الجداول | Tables | توسيط الخلايا | cells centred |
+| المحرر | Composer | اتجاه حسب ما تُدخله | follows what you type |
 | الأكواد | Code | `unicode-bidi: plaintext` | auto-detect (LTR for code) |
+
+**اتجاه النص يتبع المحتوى، لا الإطار.** كل كتلة نصية تحمل
+`unicode-bidi: plaintext` — وهو المقابل في CSS لـ `dir="auto"` — فيختار
+الخوارزمية مستوى الفقرة من أول محرف قوي داخلها: العربي يُصفّ يميناً، والإنجليزي
+يبقى يساراً، ويمكن أن يجتمعا في الرسالة نفسها. فرض `direction: rtl` على الكتل
+بدلاً من ذلك يسحب كل فقرة لاتينية إلى الهامش الأيمن، وهذا ما أُصلح.
+لا يصلح `:dir()` لهذا الغرض: فهو يقرأ خاصية `direction` الخاصة بالعنصر، وهي ليست
+ما يحسمه `plaintext` عند العرض.
+
+**Text direction follows content, not the container.** Each text block carries
+`unicode-bidi: plaintext` — the CSS form of `dir="auto"` — so the bidi algorithm
+takes the paragraph level from that block's first strong character: Arabic lays
+out and aligns right, English stays left, and both can share one message.
+Forcing `direction: rtl` on the blocks instead drags every Latin paragraph to
+the right margin, which is the behaviour this fixes. `:dir()` cannot express it:
+it reads the element's own `direction` property, not what `plaintext` resolves
+at render time.
+
+**العنصر البنيوي له جهة، والنص له جهة أخرى.** `direction` يحرّك ما يُرسم خارج
+صندوق النص — نقطة القائمة، والمسافة البادئة التي تجلس فيها، وشريط الاقتباس —
+بينما `plaintext` و`text-align` يحرّكان النص نفسه. والتطبيق يضبط هذه العناصر
+بخصائص **فيزيائية** (`.markdown :where(ul, ol) { padding-left }`،
+`.markdown blockquote { border-left }`)، و`direction` لا يقلب خاصية فيزيائية.
+لذلك تُعاد كتابة الجهة صراحةً مع `!important`: أنماط التطبيق تُحقن وقت التشغيل،
+فلا يمكن الاعتماد على الخصوصية ولا على ترتيب التحميل.
+
+**Structure and text take their side separately.** `direction` moves what is
+painted outside the text box — list markers, the indent they sit in, a quote's
+bar — while `plaintext` and `text-align` move the text itself. The app sets
+those with **physical** properties (`.markdown :where(ul, ol) { padding-left }`,
+`.markdown blockquote { border-left }`), and `direction` cannot flip a physical
+side. The side is therefore restated explicitly, with `!important`: the app's
+sheets are injected at runtime, so neither specificity nor load order can be
+relied on.
 
 The plugin is **dual-face**, like every DSH client plugin:
 
