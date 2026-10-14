@@ -277,6 +277,15 @@ restart.
 
 ## Changelog / سجلّ التغييرات
 
+### 1.0.3
+
+نفس إصلاحات 1.0.2. الرقم `1.0.2` جهّزته محاولة نشر سابقة على مراحل ولم تُعتمد،
+فاحتُجز على السجلّ ولا يمكن نشر رقم فوقه؛ لذلك يبدأ التوزيع من `1.0.3`.
+
+Same fixes as 1.0.2. The number `1.0.2` was staged by an earlier publish attempt
+that was never approved, which holds it on the registry, so distribution starts
+at `1.0.3` instead.
+
 ### 1.0.2
 
 **أُصلح: النص الإنجليزي لم يعد يُسحب إلى اليمين.** كانت الإضافة تفرض
