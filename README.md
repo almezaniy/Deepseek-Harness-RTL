@@ -1,12 +1,13 @@
 # deepseek-harness-rtl
 
 إضافة **للمتصفح (Cordis client plugin)** تجعل النصوص العربية تُعرض صحيحة في واجهة
-DeepSeek Harness: محاذاة RTL، جمل مختلطة بدون تشويش، محرر يبدأ من اليمين، وأكواد
-تبقى LTR.
+DeepSeek Harness: اتجاه يتبع المحتوى، جمل مختلطة بدون تشويش، محرر يتبع ما تُدخله،
+وأكواد تبقى LTR.
 
 A **browser-side Cordis client plugin** that makes Arabic (RTL) text render
-correctly in the DeepSeek Harness web UI: RTL alignment, clean mixed-sentence
-punctuation, an RTL composer, and code areas that stay left-to-right.
+correctly in the DeepSeek Harness web UI: direction taken from the content, clean
+mixed-sentence punctuation, a composer that follows what you type, and code areas
+that stay left-to-right.
 
 [![npm](https://img.shields.io/npm/v/deepseek-harness-rtl.svg)](https://www.npmjs.com/package/deepseek-harness-rtl)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
@@ -16,8 +17,13 @@ punctuation, an RTL composer, and code areas that stay left-to-right.
 <p align="center"><sub>الواجهة بعد تفعيل الإصلاح: فقرات RTL، ترقيم سليم في الجمل المختلطة، وكود يبقى LTR.<br>
 The UI with the fix on: RTL paragraphs, correct punctuation in mixed sentences, code still LTR.</sub></p>
 
-> **التوافق / Verified against:** `@deepseek-ai/dsh` **0.1.5-rc.2**.
-> محددات الطبقة 2 مأخوذة من هذا البناء بالضبط؛ الطبقة 1 تعمل بمعزل عن تغيّر الهاشات.
+> **التوافق / Verified against:** `@deepseek-ai/dsh` **0.2.0-rc.2** (تطبيق سطح المكتب
+> الرسمي لويندوز). محددات الطبقة 2 مأخوذة من هذا البناء؛ الطبقة 1 تعمل بمعزل عن
+> تغيّر الهاشات.
+>
+> جُرِّب في Chromium مقابل ملف أنماط التطبيق نفسه (`MarkdownText.module.css`)
+> محمّلاً **بعد** ورقة الإضافة، أي في أصعب ترتيب، لأنه لا يمكن الاعتماد على ترتيب
+> تحميل أنماط تُحقن وقت التشغيل.
 
 ---
 
@@ -268,6 +274,35 @@ restart.
 ## Notes / ملاحظات
 - غير تدخّلية: تحقن CSS فقط، بلا أثر جانبي.
 - Non-intrusive: it only injects CSS, nothing else.
+
+## Changelog / سجلّ التغييرات
+
+### 1.0.2
+
+**أُصلح: النص الإنجليزي لم يعد يُسحب إلى اليمين.** كانت الإضافة تفرض
+`direction: rtl` على كل الكتل، فينزاح كل نص لاتيني إلى الهامش الأيمن. الآن كل كتلة
+تحمل `unicode-bidi: plaintext`، فيأتي الاتجاه من محتواها.
+
+**أُصلح: نقاط القوائم وشريط الاقتباس.** كانت على اليسار بينما النص على اليمين، لأن
+التطبيق يضبطها بخصائص فيزيائية و`direction` لا يقلبها. صارت الجهة مكتوبة صراحةً مع
+`!important`.
+
+**أُصلح: العناوين وخلايا الجداول.** العناوين تأخذ اليمين صراحةً، وخلايا الجداول
+تتوسّط بغضّ النظر عن اللغة.
+
+**أُصلح: أسطر رسالة المستخدم.** كل أسطر الرسالة تلتصق باليمين، فلا ينقسم شكل
+الفقاعة بين محاذاتين عندما يبدأ سطر بحروف لاتينية.
+
+**Improvements:** English prose and code keep their left alignment while Arabic
+takes the right; list markers, the quote bar and headings sit on the right; table
+cells centre in both scripts; every line of a user turn stays right; the composer
+follows what you type instead of always starting at the right.
+
+### 1.0.1
+
+أول إصدار منشور: ورقة أنماط تجعل النص العربي يُصفّ يميناً.
+
+First published release: a stylesheet that lays Arabic text out right.
 
 ## License
 MIT — see [LICENSE](./LICENSE).

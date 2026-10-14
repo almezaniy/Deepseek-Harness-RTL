@@ -1,7 +1,7 @@
 {
   "name": "deepseek-harness-rtl",
-  "version": "1.0.1",
-  "description": "Arabic (RTL) text fix for the DeepSeek Harness web UI — a browser-side Cordis client plugin that injects an RTL stylesheet.",
+  "version": "1.0.2",
+  "description": "Arabic (RTL) text fix for the DeepSeek Harness web UI â€” a browser-side Cordis client plugin that injects an RTL stylesheet.",
   "type": "module",
   "main": "./index.js",
   "exports": {
