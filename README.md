@@ -28,7 +28,7 @@ On page load it injects a stylesheet that:
 
 | المنطقة | Area | السلوك | Behavior |
 |---|---|---|---|
-| فقاعات رسائل | User bubbles | اتجاه حسب المحتوى | direction from content |
+| فقاعات رسائل | User bubbles | كل الأسطر يمين | all lines right |
 | فقرات الردود | Assistant prose | `unicode-bidi: plaintext` | per-block auto-detect |
 | جسم التفكير | Thinking body | `unicode-bidi: plaintext` | per-block auto-detect |
 | العناوين | Headings | يمين | right |
