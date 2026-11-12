@@ -109,8 +109,22 @@ design — not because the install failed. See *Verify* below.
 
 ### المتطلبات / Requirements
 - DeepSeek Harness running the `web` profile (the browser GUI).
-- `pnpm` on PATH (not needed with `-PatchOnly`).
+- `pnpm` on PATH for the script and manual methods; **not needed** when the
+  package is installed as a bundle or with `-PatchOnly`.
 - A different profile name? pass `-Profile <name>`.
+
+### الطريقة ٠ — من صفحة الإضافات (بلا pnpm) / Method 0 — as a bundle
+
+الحزمة تُعلن `dsh.bundle.patch`، فتصلح للتثبيت كـ bundle: صفحة **Plugins** في
+DeepSeek Harness ← **Add plugin** بمسار الحزمة أو بمواصفة npm، أو `plugin_manager`
+بـ `install_bundle`. الصف `ui-rtl-fix` تُدرجه الحزمة نفسها، فلا يُضاف يدوياً، ولا
+حاجة إلى `pnpm` على PATH ولا إلى تشغيل السكربت.
+
+The package declares `dsh.bundle.patch`, so it installs as a bundle: the
+**Plugins** page in DeepSeek Harness → **Add plugin**, with the package directory
+or an npm spec, or `plugin_manager` `install_bundle`. The bundle inserts the
+`ui-rtl-fix` row itself — do not add it by hand — and none of this needs `pnpm`
+on PATH or the script.
 
 ### الطريقة ١ — سكربت التثبيت (الأسهل) / Method 1 — one command
 
@@ -154,6 +168,11 @@ Then add this block to `cordis.patch.yml` in the same folder — replacing the
 
 `id` معرّف حرّ، أما `name` فيجب أن يطابق اسم الحزمة المثبّتة.
 `id` is a free-form row id; `name` must match the installed package name.
+
+> إن ثبّتت الحزمة كـ bundle فلا تُضِف هذه الكتلة: الحزمة تُدرج الصف نفسه، وإضافته
+> مرة أخرى تكرّر المعرّف `ui-rtl-fix`.
+> If you installed the package as a bundle, do not add this block: the bundle
+> already inserts the row, and adding it again duplicates the `ui-rtl-fix` id.
 
 ### التفعيل / Activation
 
