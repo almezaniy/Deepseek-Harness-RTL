@@ -17,7 +17,7 @@ that stay left-to-right.
 <p align="center"><sub>الواجهة بعد تفعيل الإصلاح: فقرات RTL، ترقيم سليم في الجمل المختلطة، وكود يبقى LTR.<br>
 The UI with the fix on: RTL paragraphs, correct punctuation in mixed sentences, code still LTR.</sub></p>
 
-> **التوافق / Verified against:** `@deepseek-ai/dsh` **0.2.0-rc.2** (تطبيق سطح المكتب
+> **التوافق / Verified against:** `@deepseek-ai/dsh` **0.2.2-rc.2** (تطبيق سطح المكتب
 > الرسمي لويندوز). محددات الطبقة 2 مأخوذة من هذا البناء؛ الطبقة 1 تعمل بمعزل عن
 > تغيّر الهاشات.
 >
@@ -232,22 +232,31 @@ getComputedStyle(document.querySelector('[data-composer-input]')).direction  // 
   - `[data-composer-input]` for the composer (a Lexical `contenteditable` div
     since dsh 0.1.5; `textarea.uV2eYG_input`, `[data-input-mirror]` and
     `[data-input-backdrop]` stay for older builds);
-  - structural elements (`p`, `li`, `h1`–`h6`, `blockquote`, `pre`, `code`).
+  - structural blocks (`p`, `li`, `div`, `h1`–`h6`, `blockquote`, `pre`, cells)
+    — block boxes only: `unicode-bidi: plaintext` on an inline element splits the
+    line, see the 1.0.4 entry.
 
 - **Layer 2 (per-build)** targets the CSS-module hashes this deployment ships —
-  verified against `@deepseek-ai/dsh` 0.1.5-rc.2:
+  verified against `@deepseek-ai/dsh` 0.2.2-rc.2:
 
   | العنصر / Element | المحدد / Selector | الوحدة / Module |
   |---|---|---|
-  | فقاعة المستخدم / User bubble | `.Sixlwa_bubble` | `dsh-client-ui-chat` `ChatFlow.module.css` |
-  | فقرات الرد / Assistant prose | `.hWmORq_root` | `dsh-client-ui-chat` `AssistantMarkdown.module.css` |
-  | جسم التفكير / Reasoning body | `.lcKema_thinkBody` | `dsh-client-ui-chat` `ReasoningRow.module.css` |
-  | المحرر / Composer | `.uV2eYG_input` (+ `[data-composer-input]`) | `dsh-client-ui-conversation` `InputBar.module.css` |
+  | فقرات الرد / Assistant prose | `.xMeOpW_root` | `dsh-client-ui-chat` `AssistantMarkdown.module.css` |
+  | جسم التفكير / Reasoning body | `.VJlF5q_thinkBody` | `dsh-client-ui-chat` `ReasoningRow.module.css` |
 
-  هاشات الأبنية الأقدم (`.gdEzaW_bubble`، `[class*="Sxvs8a_root"]`،
-  `.QWLzlG_thinkBody`) أُزيلت بعد ترقية 0.1.5.
-  Older-build hashes (`.gdEzaW_bubble`, `[class*="Sxvs8a_root"]`,
-  `.QWLzlG_thinkBody`) were dropped with the 0.1.5 refresh.
+  فقاعة المستخدم صارت تُغطّى بالطبقة 1 وحدها: `ChatFlow.module.css` لم يبقَ في
+  البناء، و`[data-chat-flow-kind="user"]` يحدّد الدور. والمحرر يُغطّى بـ
+  `[data-composer-input]`، فلا يحتاج هاشًا.
+  The user bubble is covered by Layer 1 alone: `ChatFlow.module.css` no longer
+  ships, and `[data-chat-flow-kind="user"]` identifies the turn. The composer is
+  covered by `[data-composer-input]`, so it needs no hash.
+
+  هاشات الأبنية الأقدم (`.Sixlwa_bubble`، `.hWmORq_root`، `.lcKema_thinkBody`،
+  `.gdEzaW_bubble`، `[class*="Sxvs8a_root"]`، `.QWLzlG_thinkBody`) أُزيلت بعد
+  ترقية 0.2.2.
+  Older-build hashes (`.Sixlwa_bubble`, `.hWmORq_root`, `.lcKema_thinkBody`,
+  `.gdEzaW_bubble`, `[class*="Sxvs8a_root"]`, `.QWLzlG_thinkBody`) were dropped
+  with the 0.2.2 refresh.
 
   تُحدَّث هذه القواعد عند تغيّر بناء الواجهة؛ وإن نسيتَها، تسكت القواعد وحدها بينما
   تستمر الطبقة 1 بالعمل.
@@ -276,6 +285,35 @@ restart.
 - Non-intrusive: it only injects CSS, nothing else.
 
 ## Changelog / سجلّ التغييرات
+
+### 1.0.4
+
+**أُصلح: السطر المختلط كان يُقلَب ترتيبه، والفقرة التي كل محتواها نص بارز كانت تلتصق
+باليسار.** كانت الأنماط تطبّق `unicode-bidi: plaintext` على كل العناصر داخل الرسالة،
+ومنها العناصر السطرية (`span`، `strong`، حاوية الشريحة). و`plaintext` تجعل العنصر
+فقرة بيدي مستقلة، فتتقطّع الجملة عند الشريحة وتُعاد مقاطعها بترتيب آخر، وتنفصل
+الفقرة التي كل محتواها `<strong>` فتُحسب محاذاتها `start` على اتجاه الأب (LTR)
+فتصبح يسارًا. صار `plaintext` على الكتل وحدها (`p`، `li`، `div`، العناوين،
+الاقتباس، الخلايا، `pre`)، والعناصر السطرية تتبع فقرتها.
+
+**حُدِّثت الطبقة 2 لبناء 0.2.2-rc.2:** `.xMeOpW_root` في `AssistantMarkdown`
+و`.VJlF5q_thinkBody` في `ReasoningRow`. هاشات 0.1.5 لم تعد تطابق شيئًا، و
+`ChatFlow.module.css` أُزيل من البناء، فبقيت فقاعة المستخدم على الطبقة 1.
+
+**Fixed: a mixed line came out reordered, and a paragraph whose whole content is
+bold snapped to the left.** The stylesheet applied `unicode-bidi: plaintext` to
+every element inside a message, inline ones included (`span`, `strong`, the chip
+wrapper). `plaintext` makes its element a bidi paragraph of its own, so a line
+containing an inline code chip is split there and its runs are reordered, and a
+paragraph that is one `<strong>` becomes a separate paragraph whose
+`text-align: start` resolves against the parent's LTR direction and lands left.
+`plaintext` now applies to block boxes only (`p`, `li`, `div`, headings, quote,
+cells, `pre`); inline elements inherit their paragraph's direction.
+
+**Layer 2 refreshed for 0.2.2-rc.2:** `.xMeOpW_root` in `AssistantMarkdown` and
+`.VJlF5q_thinkBody` in `ReasoningRow`. The 0.1.5 hashes match nothing in this
+build, and `ChatFlow.module.css` no longer ships, so the user bubble stays on
+Layer 1.
 
 ### 1.0.3
 

@@ -4,150 +4,147 @@ window.__ModuleLoader__.load({
 		var module = { exports: {} };
 		var exports = module.exports;
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
-		// Arabic (RTL) text fix. Two layers:
-		//  - LAYER 1 (portable): build-stable anchors (data-chat-flow-kind,
-		//    data-composer-input, structural elements) so it survives different
-		//    builds.
-		//  - LAYER 2 (this build): hash-based refinements verified against
-		//    @deepseek-ai/dsh 0.1.5-rc.2; refresh them when a build renames its
-		//    CSS modules, Layer 1 keeps the main behavior either way.
+
+		/*
+		 * Arabic (RTL) text fix for the DeepSeek Harness web UI.
+		 *
+		 * DIRECTIONS COME FROM CONTENT, NOT FROM THE FRAME.
+		 * Each text block carries `unicode-bidi: plaintext` (the CSS form of
+		 * dir="auto"), so the bidi algorithm takes the paragraph level from that
+		 * block's first strong character: Arabic lays out and aligns right,
+		 * English stays left, and both can share one message.
+		 *
+		 * WHY ONLY BLOCK ELEMENTS GET `plaintext`
+		 * `unicode-bidi: plaintext` makes the element its own bidi paragraph.
+		 * Applied to an INLINE element it splits the surrounding line at that
+		 * point: a paragraph with an inline code chip comes out with its runs
+		 * reordered, and a paragraph whose whole content is one <strong> gets a
+		 * separate paragraph whose `text-align: start` then resolves against the
+		 * parent's LTR direction, i.e. it snaps to the left. So the rules below
+		 * target block boxes only (p, li, div, headings, quote, cells) and never
+		 * inline ones (span, strong, em, a, code, kbd, samp). Bidi inside a
+		 * paragraph handles those inline runs correctly by itself.
+		 *
+		 * LAYER 1 (portable) uses build-stable anchors: data-chat-flow-kind on
+		 * the chat flow rows, data-composer-input on the composer, and the
+		 * structural elements themselves.
+		 *
+		 * LAYER 2 (per build) adds the CSS-module hashes this deployment ships.
+		 * These were re-verified against @deepseek-ai/dsh 0.2.2-rc.2
+		 * (AssistantMarkdown.module.css .xMeOpW_root, ReasoningRow.module.css
+		 * .VJlF5q_thinkBody); the 0.1.5-rc.2 hashes match nothing here. Refresh
+		 * them when a build renames its modules - Layer 1 keeps the main
+		 * behavior either way.
+		 */
+
+		var BLOCKS = "p, li, div, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dt, dd, td, th";
+
 		var css = [
-			'/* ===== dsh-client-rtl-fix ===== */',
-			'/* LAYER 1 - portable, build-stable anchors for the chat flow. */',
-			'',
-			'/* Every text block decides its own direction via `unicode-bidi: plaintext`',
-			'   (the CSS form of dir="auto"): the bidi algorithm takes the paragraph',
-			'   level from that block\'s first strong character. Arabic lays out and',
-			'   aligns right, English stays left, and both can share one message.',
-			'   Forcing `direction: rtl` on these blocks instead would drag every',
-			'   Latin paragraph to the right margin - the behaviour this fixes.',
-			'   `:dir()` cannot express this: it reads the element\'s own `direction`',
-			'   property, which is not what `plaintext` resolves at render time. */',
-			'[data-chat-flow-kind="assistant-step"] :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dt, dd, td, th),',
-			'[data-chat-flow-kind="assistant-step"] :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dt, dd) :not(pre):not(code):not(kbd):not(samp),',
-			'[data-chat-flow-kind="user"] :is(p, div, li, h1, h2, h3, h4, h5, h6, blockquote),',
-			'[data-chat-flow-kind="user"] :is(p, div, li, h1, h2, h3, h4, h5, h6, blockquote) :not(pre):not(code):not(kbd):not(samp),',
-			'[data-chat-flow-kind="steering"] :is(p, div, li, h1, h2, h3, h4, h5, h6, blockquote) {',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'/* The container only positions the turn; direction comes from content,',
-			'   so an English message is not dragged to the right and an Arabic one is',
-			'   not forced to read left-to-right. The bubble stays on the right side of',
-			'   the transcript through the chat layout, not through `direction`. */',
-			'[data-chat-flow-kind="user"],',
-			'[data-chat-flow-kind="steering"] {',
-			'  direction: ltr;',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'/* A user turn reads as one block, so every line of it takes the right edge,',
-			'   including a line that opens with Latin text. Without this, such a line',
-			'   resolves to the left through `plaintext` and the bubble looks torn',
-			'   between two alignments. */',
-			'[data-chat-flow-kind="user"] :is(p, div, li, h1, h2, h3, h4, h5, h6, blockquote),',
-			'[data-chat-flow-kind="steering"] :is(p, div, li, h1, h2, h3, h4, h5, h6, blockquote) {',
-			'  text-align: right !important;',
-			'}',
-			'',
-			'/* STRUCTURAL SIDE vs TEXT SIDE. Two properties, two jobs:',
-			'   `direction` places structure painted outside the text box, and',
-			'   `unicode-bidi: plaintext` + `text-align: start` place the text itself,',
-			'   per block and per language. But the chat stylesheet owns these elements',
-			'   with PHYSICAL properties - `.markdown :where(ul, ol) { padding-left }`',
-			'   and `.markdown blockquote { border-left; padding-left }` - and',
-			'   `direction` cannot flip a physical side. So the side is restated here,',
-			'   which is what actually moves the markers and the bar.',
-			'   These declarations carry `!important` deliberately. The app styles the',
-			'   same elements, and its sheets are injected at runtime, so neither',
-			'   specificity nor load order can be relied on; a stylesheet patch has to',
-			'   beat both to be dependable. `:dir()` is unusable for any of it - it',
-			'   reads the element\'s computed `direction`, never what `plaintext`',
-			'   resolves at render time. */',
-			'[data-chat-flow-kind="assistant-step"] :is(ul, ol) {',
-			'  direction: rtl;',
-			'}',
-			'[data-chat-flow-kind="assistant-step"] :is(ul, ol) {',
-			'  padding-left: 0 !important;',
-			'  padding-right: 18px !important;',
-			'}',
-			'/* A nested list already sits inside the parent indent, so it takes none. */',
-			'[data-chat-flow-kind="assistant-step"] :is(ul, ol) ol {',
-			'  padding-left: 0 !important;',
-			'  padding-right: 0 !important;',
-			'}',
-			'[data-chat-flow-kind="assistant-step"] :is(ul, ol) > li {',
-			'  text-align: start;',
-			'}',
-			'/* Headings take the Arabic side explicitly. The generic block rule above',
-			'   already resolves them by content, but a heading is a structural line,',
-			'   and stating the side keeps it right even when the heading text opens',
-			'   with a neutral or a digit - a shape like a number followed by a',
-			'   parenthesis resolves its start edge ambiguously, and the browser then',
-			'   draws that mark at the far left. */',
-			'[data-chat-flow-kind="assistant-step"] :is(h1, h2, h3, h4, h5, h6) {',
-			'  text-align: right !important;',
-			'}',
-			'/* The quote bar and its indent, on the Arabic side. */',
-			'[data-chat-flow-kind="assistant-step"] blockquote {',
-			'  direction: rtl;',
-			'  border-left: 0 !important;',
-			'  border-right: 2px solid var(--dsw-alias-label-caption) !important;',
-			'  padding-left: 0 !important;',
-			'  padding-right: 14px !important;',
-			'}',
-			'',
-			'/* Tables centre in both scripts: a cell is a box, not a paragraph, and the',
-			'   reader scans it by column. */',
-			'[data-chat-flow-kind="assistant-step"] :is(th, td) {',
-			'  text-align: center !important;',
-			'}',
-			'',
-			'/* Composer: a Lexical contenteditable div since dsh 0.1.5, so anchor on',
-			'   the attribute rather than the element; the textarea and mirror forms',
-			'   stay for pre-0.1.5 builds. Direction follows what you type: English',
-			'   starts at the left edge, Arabic at the right. */',
-			'[data-composer-input],',
-			'textarea.uV2eYG_input,',
-			'[data-input-mirror],',
-			'[data-input-backdrop] {',
-			'  direction: ltr;',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'',
-			'/* LAYER 2 - dsh 0.1.5-rc.2 hash refinements (best-effort); the same',
-			'   anchors as Layer 1 restated for these module hashes. Layer 1 already',
-			'   carries the behaviour, so a renamed hash only costs redundancy. */',
-			'/* User bubble - dsh-client-ui-chat ChatFlow.module.css */',
-			'.Sixlwa_bubble {',
-			'  direction: ltr;',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'/* Assistant prose - dsh-client-ui-chat AssistantMarkdown.module.css */',
-			'.hWmORq_root :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dt, dd, td, th),',
-			'.hWmORq_root :is(p, li, h1, h2, h3, h4, h5, h6, blockquote, figcaption, dt, dd) :not(pre):not(code):not(kbd):not(samp),',
-			'.hWmORq_root :is(ul, ol) {',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'/* Reasoning body - dsh-client-ui-chat ReasoningRow.module.css */',
-			'.lcKema_thinkBody {',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}',
-			'',
-			'/* CODE - always auto-detect bidi (English code stays LTR, Arabic-in-code renders RTL) */',
-			'[data-chat-flow-kind] :is(pre, code, kbd, samp),',
-			'[data-composer-input] :is(pre, code, kbd, samp),',
-			'.hWmORq_root :is(pre, code, kbd, samp),',
-			'.Sixlwa_bubble :is(pre, code, kbd, samp) {',
-			'  unicode-bidi: plaintext;',
-			'  text-align: start;',
-			'}'
-		].join('\n');
+			"/* ===== deepseek-harness-rtl ===== */",
+			"",
+			"/* LAYER 1 - portable, build-stable anchors. */",
+			"[data-chat-flow-kind=\"assistant-step\"] :is(" + BLOCKS + "),",
+			"[data-chat-flow-kind=\"user\"] :is(" + BLOCKS + "),",
+			"[data-chat-flow-kind=\"steering\"] :is(" + BLOCKS + ") {",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}",
+			"",
+			"/* The container only positions the turn; direction comes from content,",
+			"   so an English message is not dragged to the right and an Arabic one",
+			"   is not forced to read left-to-right. The bubble stays on its side",
+			"   through the chat layout, not through `direction`. */",
+			"[data-chat-flow-kind=\"user\"],",
+			"[data-chat-flow-kind=\"steering\"] {",
+			"  direction: ltr;",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}",
+			"",
+			"/* A user turn reads as one block, so every line of it takes the right",
+			"   edge - including a line that opens with Latin text, which `plaintext`",
+			"   alone would resolve to the left and leave the bubble torn. */",
+			"[data-chat-flow-kind=\"user\"] :is(" + BLOCKS + "),",
+			"[data-chat-flow-kind=\"steering\"] :is(" + BLOCKS + ") {",
+			"  text-align: right !important;",
+			"}",
+			"",
+			"/* STRUCTURE SIDE vs TEXT SIDE. `direction` places what is painted",
+			"   outside the text box - list markers, the indent they sit in, a quote's",
+			"   bar - while `plaintext` and `text-align` place the text itself. The app",
+			"   sets those elements with PHYSICAL properties (padding-left,",
+			"   border-left), and `direction` cannot flip a physical side, so the side",
+			"   is restated here with `!important`: the app's sheets are injected at",
+			"   runtime, so neither specificity nor load order can be relied on. */",
+			"[data-chat-flow-kind=\"assistant-step\"] :is(ul, ol) {",
+			"  direction: rtl;",
+			"  padding-left: 0 !important;",
+			"  padding-right: 18px !important;",
+			"}",
+			"/* A nested list already sits inside the parent indent, so it takes none. */",
+			"[data-chat-flow-kind=\"assistant-step\"] :is(ul, ol) :is(ul, ol) {",
+			"  padding-left: 0 !important;",
+			"  padding-right: 0 !important;",
+			"}",
+			"",
+			"/* Headings are structural lines: keep them on the Arabic side even when",
+			"   the heading opens with a neutral or a digit. */",
+			"[data-chat-flow-kind=\"assistant-step\"] :is(h1, h2, h3, h4, h5, h6) {",
+			"  text-align: right !important;",
+			"}",
+			"",
+			"/* The quote bar and its indent, on the Arabic side. */",
+			"[data-chat-flow-kind=\"assistant-step\"] blockquote {",
+			"  direction: rtl;",
+			"  border-left: 0 !important;",
+			"  border-right: 2px solid var(--dsw-alias-label-caption) !important;",
+			"  padding-left: 0 !important;",
+			"  padding-right: 14px !important;",
+			"}",
+			"",
+			"/* Tables centre in both scripts: a cell is a box, not a paragraph, and the",
+			"   reader scans it by column. */",
+			"[data-chat-flow-kind=\"assistant-step\"] :is(th, td) {",
+			"  text-align: center !important;",
+			"}",
+			"",
+			"/* Code stays block-scoped: `pre` decides its own direction from content,",
+			"   inline `code` inherits the paragraph's and must not be isolated. */",
+			"[data-chat-flow-kind] pre,",
+			"[data-composer-input] pre {",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}",
+			"",
+			"/* Composer: a Lexical contenteditable div in current builds, so anchor on",
+			"   the attribute; the textarea and mirror forms stay for older ones.",
+			"   Direction follows what you type. */",
+			"[data-composer-input],",
+			"textarea.uV2eYG_input,",
+			"[data-input-mirror],",
+			"[data-input-backdrop] {",
+			"  direction: ltr;",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}",
+			"",
+			"/* LAYER 2 - dsh 0.2.2-rc.2 CSS-module roots (this deployment). */",
+			"/* Assistant prose - dsh-client-ui-chat AssistantMarkdown.module.css */",
+			".xMeOpW_root :is(" + BLOCKS + ") {",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}",
+			"/* Reasoning body - dsh-client-ui-chat ReasoningRow.module.css. The row is",
+			"   not always inside an assistant-step, so it carries its own anchor. */",
+			".VJlF5q_thinkBody,",
+			".VJlF5q_thinkBody :is(" + BLOCKS + ") {",
+			"  unicode-bidi: plaintext;",
+			"  text-align: start;",
+			"}"
+		].join("\n");
+
 		var PLUGIN_ID = "deepseek-harness-rtl";
+
 		function apply(ctx) {
 			if (typeof document === "undefined") return;
 			ctx.effect(() => {
@@ -161,6 +158,7 @@ window.__ModuleLoader__.load({
 				};
 			}, "ui-rtl-fix: RTL stylesheet");
 		}
+
 		module.exports = { apply: apply };
 		return module.exports;
 	}
