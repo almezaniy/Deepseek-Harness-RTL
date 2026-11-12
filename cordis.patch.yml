@@ -1,0 +1,10 @@
+# Bundle patch for the RTL client plugin.
+#
+# Upstream (deepseek-harness-rtl 1.0.3) ships this row as a snippet for the
+# profile's own cordis.patch.yml; DSH installs a profile package only when the
+# package itself declares `dsh.bundle.patch`, so the same row is carried here.
+#
+# `id` is a free-form row id; `name` MUST match the package name.
+- insert:
+    - id: ui-rtl-fix
+      name: 'deepseek-harness-rtl'
